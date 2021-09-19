@@ -1,0 +1,4 @@
+unnamed-chunk-1	%>%	aes	c	CA	date	element_text	geom_line	geom_point	ggplot	ggplotly	guide_legend	guides	labs	layout	list	new_cases	new_cases_smoothed	new_vaccinations	new_vaccinations_smoothed	scale_color_manual	scale_x_date	scale_y_continuous	theme	theme_classic
+unnamed-chunk-2	!	$	%>%	&	[<-	aes	c	date	doses	drop_na	element_text	First dose	Fully vaccinated	gather	geom_area	geom_text	ggplot	ggplotly	is.na	labs	layout	list	mutate	paste0	people_fully_vaccinated	people_vaccinated	population	Population share	round	scale_x_date	select	Share of population with at least one dose	theme	theme_classic	which	which.max
+unnamed-chunk-3	
+unnamed-chunk-4	
