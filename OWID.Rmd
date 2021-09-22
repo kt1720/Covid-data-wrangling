@@ -1,5 +1,5 @@
 ---
-title: "OWID Covid data visualization"
+title: "Covid data visualization"
 author: "Kyle Deng"
 date: "Last updated at `r format(Sys.time(), '%d %B, %Y')`"
 output: html_document
@@ -13,7 +13,11 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
 options(scipen = 999)
 library(tidyverse)
 library(plotly)
+library(zoo)
+library(lubridate)
+library(sf)
 library(gganimate)
+library(rnaturalearth)
 
 CA <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv") %>%
   filter(location == "Canada") %>%
@@ -21,7 +25,8 @@ CA <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv") %>%
   select(where(~!all(is.na(.x)))) # Drop columns that contain all NA values
 ```
 
-## Graph 1: Covid cases vs Vaccinations in Canada
+
+### Country level garphs
 ```{r}
 cvv <- ggplot(CA, aes(x = date)) +
   geom_point(aes(y = new_cases, color = "Reported cases"), size = 0.75, shape = 21) +
@@ -50,7 +55,7 @@ ggplotly(cvv) %>%
   layout(hovermode = "x", legend = list(orientation = "h", x = 0.1, y = -0.2))
 ```
 
-## Graph 2: Covid vaccination progress in Canada
+
 ```{r}
 # Find out the rows where the second dose data are NAs when first dose were given at the start of the vaccination process
 rows <- which(is.na(CA$people_fully_vaccinated) & !is.na(CA$people_vaccinated))  
@@ -71,7 +76,7 @@ vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses
   geom_text(data = vaccine[which.max(vaccine$date),],
             aes(y = `Share of population with at least one dose`,
                 label=paste0(`Share of population with at least one dose`, "%")),
-            size = 3, vjust = -0.25) +
+            size = 3, vjust = -0.5) +
 # geom_text(data = vaccine[which.max(vaccine$`Population share`),],
 #           aes(y = `Population share`, label = paste0(`Population share`, "%")), size = 3, vjust = 1.25) +
   theme_classic() +
@@ -79,7 +84,7 @@ vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses
   labs(title = "Covid-19 vaccination progress in Canada ", 
        x = "Date", y = "Share of Population(%)",
        fill = NULL, caption = "Data: OWID") +
-  theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom")
+  theme(plot.title = element_text(hjust = -0.25), legend.position = "bottom")
 # vac +
 #   transition_reveal(date) +
 #   ease_aes()
@@ -89,25 +94,160 @@ ggplotly(vac) %>%
    layout(hovermode = "x", legend = list(orientation = "h", x = 0.35, y = -0.2))
 ```
 
+
 ```{r}
-# (vac2 <- vaccine %>%
-#   plot_ly(x = ~date, y = ~count, type = "scatter", 
-#           mode = 'lines', stackgroup = 'one',
-#           fillcolor = ~doses, line = list(width = 0.5)))
+# Import JHU data
+confirmedraw <- read_csv("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv") %>%
+  filter(`Country/Region` == "Canada") %>%
+         # & `Province/State` != "Repatriated Travellers"
+         # & `Province/State` != "Diamond Princess" & `Province/State` != "Grand Princess") %>%
+  rename(Province = `Province/State`) %>%
+  select(!`Country/Region`)
+deathsraw <- read_csv("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv") %>%
+  filter(`Country/Region` == "Canada") %>% 
+         # & `Province/State` != "Repatriated Travellers"
+         # & `Province/State` != "Diamond Princess" & `Province/State` != "Grand Princess") %>%
+  rename(Province = `Province/State`) %>%
+  select(!`Country/Region`)
+
+# DATA CLEANING: To create provincial level data in Canada
+# Convert each data set from wide to long AND aggregate at provincial level  
+confirmed <- confirmedraw %>%
+  gather(key="date", value="confirmed", -c(Province, Lat, Long)) %>%
+  mutate(date = mdy(date)) 
+deaths <- deathsraw %>%
+  gather(key="date", value="deaths", -c(Province, Lat, Long)) %>%
+  mutate(date = mdy(date)) 
+
+# Final data: combine all two
+CA_provinces <- left_join(confirmed, deaths, by = c("Province", "date", "Lat", "Long"))
+
+# Create new variable: daily reported numbers of cases, deaths and recovered cases, 
+#                      7 days rolling average case numbers, number of days
+# Drop observations of Repatriated Travellers and the two cruise ships from the provincial data
+CA_provinces <- CA_provinces %>% 
+  group_by(Province) %>% 
+  mutate(daily.confirmed = c(confirmed[1], diff(confirmed)),
+         rolling.confirmed = round(rollmean(daily.confirmed, k = 7, fill = NA, align = "right"), 3),
+         daily.deaths = c(deaths[1], diff(deaths)),
+         rolling.deaths = round(rollmean(daily.deaths, k = 7, fill = NA, align = "right"), 3),
+         days = date - first(date) + 1) %>% 
+  filter(Province != "Repatriated Travellers" & Province != "Diamond Princess" &
+         Province != "Grand Princess")
+```
+
+
+### Provincial level graphs
+```{r}
+facet_case <- CA_provinces %>%
+                drop_na(rolling.confirmed) %>%
+                ggplot(aes(x=date)) + 
+                    geom_point(aes(y = daily.confirmed, color = "Reported cases"), 
+                               size = 0.25, shape = 21) +
+                    geom_line(aes(y = rolling.confirmed, color = "Cases(trend)"), size = 0.5) +
+                    geom_line(aes(y = rolling.deaths, color = "Deaths(trend)"), size = 0.5) +             
+                    geom_bar(aes(y = daily.deaths), stat = "identity", width = 0.1, fill = "red") +
+                    theme_bw() +
+                    scale_color_manual(values = c("Cases(trend)" = "darkblue", 
+                                                  "Reported cases" = "skyblue1",
+                                                  "Deaths(trend)" = "coral2")) +
+                    guides(color = guide_legend(override.aes = list(linetype = c("Cases(trend)" = 1, 
+                                                                                 "Reported cases" = 0,
+                                                                                 "Deaths(trend" = 1),
+                                                                    shape = c("Cases(trend)" = NA, 
+                                                                              "Reported cases" = 21,
+                                                                              "Deaths(trend)" = NA)))) +
+                    scale_y_continuous(trans="log10") +
+                    labs(title = "COVID-19 daily new cases and death trends in Canadian provinces",
+                       x = "Date",
+                       y = "Daily cases & death counts (log scale)",
+                       color = NULL, fill = NULL, caption = "Data: JHU") +
+                    theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
+                    facet_wrap(facets = "Province")
+ggplotly(facet_case) %>%
+  layout(legend = list(orientation = "h", x = 0.35, y = -0.1))
 ```
 
 
 ```{r}
-# plot_ly(CA, x = ~date, y = ~total_cases, type = "scatter", mode = "lines")
-# 
-# CA %>%
-#   drop_na(new_cases_smoothed) %>%
-#   mutate(positive_rate = positive_rate * 100) %>%
-#   ggplot(aes(x = date)) +
-#     geom_line(aes(y = positive_rate, color = "blue"), size = 1) +
-#     geom_line(aes(y = stringency_index, color = "red"), size = 1) +
-#     scale_x_date(date_breaks = "3 month") +
-#     theme_classic()
+province <- st_read("province.shp") 
+tc <- province %>%
+         left_join(CA_provinces, by = "Province") %>%
+         filter(date == max(date)) %>% 
+         rename(`Total cases` = confirmed, `Total death counts` = deaths) 
+map_tc <- tc %>% 
+  ggplot() +
+    geom_sf(aes(fill = `Total cases`, text = paste("Province: ", Province)),
+            color = "gray40") +
+    geom_sf_text(aes(label = PREABBR), size = 2) +
+    scale_fill_gradient("Total COVID cases", labels = scales::number, 
+                        low = "#fee8c8", high = "#e34a33") +
+    theme_void() +
+    theme(panel.grid = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          plot.title = element_text(hjust=0.5,color="gray40", size=14),
+          plot.subtitle = element_text(color="gray40", size = 10),
+          legend.title	= element_text(color="grey35", size=9),
+          legend.text	= element_text(color="grey35", size=9)) +
+    labs(title = "Total Covid cases in Canadian provinces",
+         subtitle = paste("As of", format(Sys.time(), '%d %B, %Y')))
+ggplotly(map_tc, tooptip = "text") %>%
+  layout(title = list(text = paste("Total Covid-19 cases in Canadian provinces<br>",
+                                   "<sup>As of", format(Sys.time(), '%d %B, %Y</sup>'))))
 ```
 
+
+```{r}
+map_td <- tc %>% 
+  ggplot() +
+    geom_sf(aes(fill = `Total death counts`, text = paste("Province: ", Province)),
+            color = "gray40") +
+    geom_sf_text(aes(label = PREABBR), size = 2) +
+    scale_fill_gradient("Total COVID death counts", labels = scales::number, 
+                        low = "#fee8c8", high = "#e34a33") +
+    theme_void() +
+    theme(panel.grid = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          plot.title = element_text(hjust=0.5,color="gray40", size=14),
+          plot.subtitle = element_text(color="gray40", size = 10),
+          legend.title	= element_text(color="grey35", size=9),
+          legend.text	= element_text(color="grey35", size=9)) +
+    labs(title = "Total Covid death counts in Canadian provinces",
+         subtitle = paste("As of", format(Sys.time(), '%d %B, %Y')))
+ggplotly(map_td, tooptip = "text") %>%
+  layout(title = list(text = paste("Total Covid-19 death counts in Canadian provinces<br>",
+                                   "<sup>As of", format(Sys.time(), '%d %B, %Y</sup>'))))
+```
+
+
+```{r}
+ca <- ne_states(country = "Canada", returnclass = "sf") %>%
+  rename(Province = gn_name) %>%
+  select(Province, region, geometry) %>%
+  left_join(CA_provinces, by = "Province") %>%
+  filter(days >= max(days) - 30 & days <= max(days)) %>%
+  mutate(text = paste("Province:", Province, "\nConfirmed cases:", daily.confirmed),
+         text2 = paste("Province:", Province, "\nDeath counts:", daily.deaths))
+
+ca %>%
+  plot_ly(stroke = I("black"), split = ~Province, color = ~daily.confirmed, colors = viridis::inferno(99),
+          text = ~text, showlegend = FALSE, hoveron = "fills", frame = ~date) %>%
+  colorbar(title = "Daily confirmed cases") %>%
+  style(hoverlabel = list(bgcolor = "white")) %>% 
+  animation_slider(currentvalue = list(prefix="Date: ", font = list(color = "red"))) %>%
+  layout(title = "Covid-19 cases in Canadian provinces for the past 30 days")
+```
+
+
+```{r}
+ca %>%
+  plot_ly(stroke = I("black"), split = ~Province, color = ~daily.deaths, colors = viridis::inferno(99),
+          text = ~text2, showlegend = FALSE, hoveron = "fills", frame = ~date) %>%
+  colorbar(title = "Daily death counts") %>%
+  style(hoverlabel = list(bgcolor = "white")) %>% 
+  animation_slider(currentvalue = list(prefix = "Date: ", font = list(color = "red"))) %>%
+  layout(title = "Covid-19 death counts in Canadian provinces for the past 30 days")
+```
 
