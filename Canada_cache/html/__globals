@@ -3,6 +3,6 @@ unnamed-chunk-2	!	$	%>%	&	[<-	aes	c	date	doses	drop_na	element_text	First dose	F
 unnamed-chunk-3	!	!=	%>%	&	==	c	Country/Region	daily.confirmed	daily.deaths	date	diff	filter	first	gather	group_by	Lat	left_join	Long	mdy	mutate	Province	Province/State	read_csv	rename	rollmean	round	select
 unnamed-chunk-4	%>%	aes	c	CA_provinces	daily.confirmed	daily.deaths	date	drop_na	element_text	facet_wrap	geom_bar	geom_line	geom_point	ggplot	ggplotly	guide_legend	guides	labs	layout	list	rolling.confirmed	rolling.deaths	scale_color_manual	scale_y_continuous	theme	theme_bw
 unnamed-chunk-5	$	%>%	::	==	aes	CA_provinces	confirmed	date	deaths	element_blank	element_text	filter	format	geom_sf	geom_sf_text	ggplot	ggplotly	labs	layout	left_join	list	max	paste	PREABBR	Province	rename	scale_fill_gradient	st_read	Sys.time	T	theme	theme_void	Total cases
-unnamed-chunk-6	$	%>%	::	aes	element_blank	element_text	format	geom_sf	geom_sf_text	ggplot	ggplotly	labs	layout	list	max	paste	PREABBR	Province	scale_fill_gradient	Sys.time	tc	theme	theme_void	Total death counts
+unnamed-chunk-6	
 unnamed-chunk-7	$	%>%	&	::	~	<=	>=	animation_slider	CA_provinces	colorbar	daily.confirmed	daily.deaths	days	filter	geometry	gn_name	I	layout	left_join	list	max	mutate	ne_states	paste	plot_ly	Province	region	rename	select	style	tc
-unnamed-chunk-8	$	%>%	::	~	animation_slider	ca	colorbar	I	layout	list	max	paste	plot_ly	style	tc
+unnamed-chunk-8	

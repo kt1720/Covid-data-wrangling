@@ -1,6 +1,6 @@
 # Covid data wrangling
-Graphs and Rmarkdown scripts for COVID-related data. 
+Graphs and Rmarkdown scripts for COVID-related data in Canada. 
 
-* [Data visualization of Covid-19 data in Canada](https://kt1720.github.io/Covid-data-wrangling/Canada.html)
-
+* [Data visualization in country level](https://kt1720.github.io/Covid-data-wrangling/Canada.html)
+* [Data visualization in provincial level](https://kt1720.github.io/Covid-data-wrangling/Province.html)
 
