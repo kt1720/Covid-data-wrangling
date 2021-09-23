@@ -2,7 +2,8 @@
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    - Canada.Rmd
+    paths:
+      - Canada.Rmd
   schedule:
     - cron: "35 0,23 * * *"
 
