@@ -29,6 +29,7 @@ jobs:
         run: |
           install.packages("devtools")
           install.packages("knitr")
+          install.packages("here")
           install.packages("tidyverse")
           install.packages("zoo")
           install.packages("lubridate")
@@ -38,7 +39,7 @@ jobs:
           devtools::install_github("ropensci/rnaturalearthhires")
         shell: Rscript {0}
       - name: Update data and render html
-        run: Rscript -e 'rmarkdown::render("Canada.Rmd")'
+        run: Rscript -e 'rmarkdown::render(here("Canada.Rmd"))'
       - name: Commit results
         run: |
           git config --local user.email "actions@github.com"
