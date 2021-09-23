@@ -29,7 +29,7 @@ jobs:
         run: |
           install.packages("devtools")
           install.packages("knitr")
-          install.packages("here")
+          install.packages("plotly")
           install.packages("tidyverse")
           install.packages("zoo")
           install.packages("lubridate")
