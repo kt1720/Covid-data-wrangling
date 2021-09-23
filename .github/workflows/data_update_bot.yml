@@ -1,0 +1,47 @@
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    - Canada.Rmd
+  schedule:
+    - cron: "35 0,23 * * *"
+
+name: Render html update
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  render:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Set up R
+        uses: r-lib/actions/setup-R@v1    
+      - name: Setting up pandoc for Rmd docs
+        uses: r-lib/actions/setup-pandoc@v1
+      - name: Install dependencies
+        run: |
+          install.packages("devtools")
+          install.packages("knitr")
+          install.packages("tidyverse")
+          install.packages("zoo")
+          install.packages("lubridate")
+          install.packages("rmarkdown")
+          install.packages("sf",type="binary")
+          install.packages("rnaturalearth")
+          devtools::install_github("ropensci/rnaturalearthhires")
+        shell: Rscript {0}
+      - name: Update data and render html
+        run: |
+          Rscript -e 'rmarkdown::render("Canada.Rmd")'
+        shell: Rscript {0} 
+      - name: Commit results
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git commit Canada.html Canada_cache -m "Update data" || echo "No changes to commit"
+          git push origin || echo "No changes to commit"
+ 
+        
