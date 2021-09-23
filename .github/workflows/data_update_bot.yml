@@ -15,8 +15,6 @@ jobs:
   render:
     # The type of runner that the job will run on
     runs-on: windows-latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -35,7 +33,7 @@ jobs:
           install.packages("rmarkdown")
           install.packages("sf",type="binary")
           install.packages("rnaturalearth")
-          remotes::install_github("ropensci/rnaturalearthhires")
+          install.packages("rnaturalearthhires",brepos = "http://packages.ropensci.org", type = "source")
         shell: Rscript {0}
       - name: Update data and render html
         run: |
