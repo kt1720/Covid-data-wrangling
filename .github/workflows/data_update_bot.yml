@@ -44,9 +44,10 @@ jobs:
         run: |
           rmarkdown::render("Canada.Rmd")
         shell: Rscript {0}
-      - name: Commit results
+     
       - id: get-date
         run: echo "::set-output name=value::$(date --iso-8601)"
+      - name: Commit results
       - uses: EndBug/add-and-commit@v7
         with:
           add: 'Canada.html'
