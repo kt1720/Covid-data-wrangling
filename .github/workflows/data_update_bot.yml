@@ -44,13 +44,11 @@ jobs:
         run: |
           rmarkdown::render("Canada.Rmd")
         shell: Rscript {0}
-      - id: get-date
-        run: echo "::set-output name=value::$(date --iso-8601)"
       - name: Commit results
       - uses: EndBug/add-and-commit@v7
         with:
           add: 'Canada.html'
           default_author: github_actions
-          message: "Bot: Update data ${{ steps.get-date.outputs.value }}" 
+          message: "Bot: Update data ${{ $(date --iso-8601) }}" 
  
         
