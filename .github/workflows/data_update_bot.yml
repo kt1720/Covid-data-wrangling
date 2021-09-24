@@ -44,7 +44,6 @@ jobs:
         run: |
           rmarkdown::render("Canada.Rmd")
         shell: Rscript {0}
-     
       - id: get-date
         run: echo "::set-output name=value::$(date --iso-8601)"
       - name: Commit results
