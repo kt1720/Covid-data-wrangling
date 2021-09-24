@@ -55,7 +55,7 @@ cvv <- ggplot(CA, aes(x = date)) +
   theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
   scale_y_continuous(trans="log10")
 ggplotly(cvv) %>%
-  layout(hovermode = "x", legend = list(orientation = "h", x = 0.24, y = -0.2))
+  layout(hovermode = "x", legend = list(orientation = "h", x = 0.24, y = -0.1))
 ```
 
 
@@ -95,7 +95,7 @@ vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses
 ggplotly(vac) %>%
  # animation_opts(frame = 278, easing = "elastic", redraw = FALSE) %>%
  # rangeslider(list(type = "date")) %>%
-   layout(hovermode = "x", legend = list(orientation = "h", x = 0.4, y = -0.2))
+   layout(hovermode = "x", legend = list(orientation = "h", x = 0.4, y = -0.1))
 ```
 
 
@@ -161,7 +161,7 @@ facet_case <- CA_provinces %>%
                                                                               "Reported cases" = 21,
                                                                               "Deaths(trend)" = NA)))) +
                     scale_y_continuous(trans="log10") +
-                    labs(title = "COVID-19 daily cases and death trends (log10 scale) in Canadian provinces",
+                    labs(title = "COVID-19 daily case and death trends (log10 scale) in Canadian provinces",
                          x = "Date",
                          y = NULL,
                         # y = "Daily cases & death counts (log scale)",
