@@ -9,7 +9,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, 
-                      autodep = TRUE, fig.retina = 2,	dpi = 150, 
+                      autodep = TRUE, fig.retina = 1,	dpi = 150, 
                       fig.width = 7.5, fig.height = 5)
 
 options(scipen = 999)
@@ -20,83 +20,83 @@ library(lubridate)
 library(sf)
 library(rnaturalearth)
 
-# CA <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv") %>%
-#   filter(location == "Canada") %>%
-#   drop_na(new_cases_smoothed) %>%
-#   select(where(~!all(is.na(.x)))) # Drop columns that contain all NA values
+CA <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv") %>%
+  filter(location == "Canada") %>%
+  drop_na(new_cases_smoothed) %>%
+  select(where(~!all(is.na(.x)))) # Drop columns that contain all NA values
 ```
 
 
-<!-- This section uses the dataset published by Our World in Data, and gives an overview of Covid and vaccination trends in Canada. -->
+This section uses the dataset published by Our World in Data, and gives an overview of Covid and vaccination trends in Canada.
 
-<!-- ### Country level trend -->
-<!-- ```{r} -->
-<!-- cvv <- ggplot(CA, aes(x = date)) + -->
-<!--   geom_point(aes(y = new_cases, color = "Reported cases"), size = 0.75, shape = 21) + -->
-<!--   geom_point(aes(y = new_vaccinations, color = "Vaccinations given"), size = 0.75, shape = 21) + -->
-<!--   geom_line(aes(y = new_cases_smoothed, color = "Cases(trend)"), size = 1) + -->
-<!--   geom_line(aes(y = new_vaccinations_smoothed, color = "Vaccinations(trend)"), size = 1) + -->
-<!--   theme_classic() + -->
-<!--   scale_color_manual(values = c("Cases(trend)" = "darkblue", "Vaccinations(trend)" = "red", -->
-<!--                                 "Reported cases" = "skyblue1", "Vaccinations given" = "pink1")) + -->
-<!--   guides(color = guide_legend(override.aes = list(linetype = c("Cases(trend)" = 1,  -->
-<!--                                                                "Vaccinations(trend)" = 1, -->
-<!--                                                                "Reported cases" = 0,  -->
-<!--                                                                "Vaccinations given" = 0), -->
-<!--                                                   shape = c("Cases(trend)" = NA,  -->
-<!--                                                             "Vaccinations(trend)" = NA, -->
-<!--                                                             "Reported cases" = 21,  -->
-<!--                                                             "Vaccinations given" = 21)))) + -->
-<!--   labs(title = "Covid-19 daily cases and vaccinations in Canada", -->
-<!--        x = "Date", -->
-<!--        y = "Daily cases & vaccinations (log10 scale)", -->
-<!--        color = NULL, caption = "Data: OWID") + -->
-<!--   scale_x_date(date_breaks = "4 month") + -->
-<!--   theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") + -->
-<!--   scale_y_continuous(trans="log10")  -->
-<!-- ggplotly(cvv) %>% -->
-<!--   layout(hovermode = "x", legend = list(orientation = "h", x = 0.24, y = -0.2)) -->
-<!-- ``` -->
+### Country level trend
+```{r}
+cvv <- ggplot(CA, aes(x = date)) +
+  geom_point(aes(y = new_cases, color = "Reported cases"), size = 0.75, shape = 21) +
+  geom_point(aes(y = new_vaccinations, color = "Vaccinations given"), size = 0.75, shape = 21) +
+  geom_line(aes(y = new_cases_smoothed, color = "Cases(trend)"), size = 1) +
+  geom_line(aes(y = new_vaccinations_smoothed, color = "Vaccinations(trend)"), size = 1) +
+  theme_classic() +
+  scale_color_manual(values = c("Cases(trend)" = "darkblue", "Vaccinations(trend)" = "red",
+                                "Reported cases" = "skyblue1", "Vaccinations given" = "pink1")) +
+  guides(color = guide_legend(override.aes = list(linetype = c("Cases(trend)" = 1,
+                                                               "Vaccinations(trend)" = 1,
+                                                               "Reported cases" = 0,
+                                                               "Vaccinations given" = 0),
+                                                  shape = c("Cases(trend)" = NA,
+                                                            "Vaccinations(trend)" = NA,
+                                                            "Reported cases" = 21,
+                                                            "Vaccinations given" = 21)))) +
+  labs(title = "Covid-19 daily cases and vaccinations in Canada",
+       x = "Date",
+       y = "Daily cases & vaccinations (log10 scale)",
+       color = NULL, caption = "Data: OWID") +
+  scale_x_date(date_breaks = "4 month") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
+  scale_y_continuous(trans="log10")
+ggplotly(cvv) %>%
+  layout(hovermode = "x", legend = list(orientation = "h", x = 0.24, y = -0.2))
+```
 
 
-<!-- ### Vaccination progress  -->
-<!-- ```{r} -->
-<!-- # Find out the rows where the second dose data are NAs when first dose were given at the start of the vaccination process -->
-<!-- rows <- which(is.na(CA$people_fully_vaccinated) & !is.na(CA$people_vaccinated))   -->
-<!-- CA[rows, "people_fully_vaccinated"] = 0  # Change the NA values to 0 -->
+### Vaccination progress
+```{r}
+# Find out the rows where the second dose data are NAs when first dose were given at the start of the vaccination process
+rows <- which(is.na(CA$people_fully_vaccinated) & !is.na(CA$people_vaccinated))
+CA[rows, "people_fully_vaccinated"] = 0  # Change the NA values to 0
 
-<!-- vaccine <- CA %>%  -->
-<!--   mutate(`First dose` = round((people_vaccinated - people_fully_vaccinated) / population * 100, 3), -->
-<!--          `Fully vaccinated` = round(people_fully_vaccinated / population  * 100, 3), -->
-<!--          `Share of population with at least one dose` = round(people_vaccinated / population * 100, 3)) %>% -->
-<!--   select(date, `First dose`, `Fully vaccinated`, `Share of population with at least one dose`) %>% -->
-<!--   drop_na(`First dose`) %>% -->
-<!--   gather("doses", "Population share", -c(date, `Share of population with at least one dose`)) -->
+vaccine <- CA %>%
+  mutate(`First dose` = round((people_vaccinated - people_fully_vaccinated) / population * 100, 3),
+         `Fully vaccinated` = round(people_fully_vaccinated / population  * 100, 3),
+         `Share of population with at least one dose` = round(people_vaccinated / population * 100, 3)) %>%
+  select(date, `First dose`, `Fully vaccinated`, `Share of population with at least one dose`) %>%
+  drop_na(`First dose`) %>%
+  gather("doses", "Population share", -c(date, `Share of population with at least one dose`))
 
-<!-- vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses)) + -->
-<!--                                   # text = paste("Date:", date, "<br>Population share:",  -->
-<!--                                   # `Population share`, "%<br>doses:", doses))) + -->
-<!--   geom_area() + -->
-<!--   geom_text(data = vaccine[which.max(vaccine$date),], -->
-<!--             aes(y = `Share of population with at least one dose`, -->
-<!--                 label=paste0(`Share of population with at least one dose`, "%")), -->
-<!--             size = 3, vjust = -0.5) + -->
-<!-- # geom_text(data = vaccine[which.max(vaccine$`Population share`),], -->
-<!-- #           aes(y = `Population share`, label = paste0(`Population share`, "%")), size = 3, vjust = 1.25) + -->
-<!--   theme_classic() + -->
-<!--   scale_x_date(date_breaks = "2 month") + -->
-<!--   labs(title = "Covid-19 vaccination progress in Canada ",  -->
-<!--        x = "Date", y = "Share of Population(%)", -->
-<!--        fill = NULL, caption = "Data: OWID") + -->
-<!--   theme(plot.title = element_text(hjust = -0.25), legend.position = "bottom") -->
-<!-- # vac + -->
-<!-- #   transition_reveal(date) + -->
-<!-- #   ease_aes() -->
-<!-- ggplotly(vac) %>% -->
-<!--  # animation_opts(frame = 278, easing = "elastic", redraw = FALSE) %>% -->
-<!--  # rangeslider(list(type = "date")) %>% -->
-<!--    layout(hovermode = "x", legend = list(orientation = "h", x = 0.4, y = -0.2)) -->
-<!-- ``` -->
+vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses)) +
+                                  # text = paste("Date:", date, "<br>Population share:",
+                                  # `Population share`, "%<br>doses:", doses))) +
+  geom_area() +
+  geom_text(data = vaccine[which.max(vaccine$date),],
+            aes(y = `Share of population with at least one dose`,
+                label=paste0(`Share of population with at least one dose`, "%")),
+            size = 3, vjust = -0.5) +
+# geom_text(data = vaccine[which.max(vaccine$`Population share`),],
+#           aes(y = `Population share`, label = paste0(`Population share`, "%")), size = 3, vjust = 1.25) +
+  theme_classic() +
+  scale_x_date(date_breaks = "2 month") +
+  labs(title = "Covid-19 vaccination progress in Canada ",
+       x = "Date", y = "Share of Population(%)",
+       fill = NULL, caption = "Data: OWID") +
+  theme(plot.title = element_text(hjust = -0.25), legend.position = "bottom")
+# vac +
+#   transition_reveal(date) +
+#   ease_aes()
+ggplotly(vac) %>%
+ # animation_opts(frame = 278, easing = "elastic", redraw = FALSE) %>%
+ # rangeslider(list(type = "date")) %>%
+   layout(hovermode = "x", legend = list(orientation = "h", x = 0.4, y = -0.2))
+```
 
 
 ```{r}
