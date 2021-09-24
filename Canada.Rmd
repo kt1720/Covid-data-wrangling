@@ -211,7 +211,7 @@ ca <- ne_states(country = "Canada", returnclass = "sf") %>%
          text2 = paste("Province:", Province, "\nDeath counts:", daily.deaths)) %>%
   rename(`Total cases` = confirmed, `Total death counts` = deaths) 
 
-map_tc <- ca %>%
+map_ca <- ca %>%
   filter(date == max(date)) %>%
   ggplot() +
     geom_sf(aes(fill = `Total cases`, text = paste("Province: ", Province)),
