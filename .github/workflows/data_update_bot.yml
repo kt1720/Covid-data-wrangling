@@ -36,6 +36,7 @@ jobs:
           install.packages("lubridate")
           install.packages("rmarkdown")
           install.packages("sf")
+          install.packages("viridis")
           install.packages("rnaturalearth")
           devtools::install_github("ropensci/rnaturalearthhires")
         shell: Rscript {0}
