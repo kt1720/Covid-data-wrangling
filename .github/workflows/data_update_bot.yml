@@ -49,6 +49,6 @@ jobs:
         with:
           add: 'Canada.html'
           default_author: github_actions
-          message: "Bot: Update data ${{ $(date --iso-8601) }}" 
+          message: "Bot: Update data ${{ date --iso-8601 }}" 
  
         
