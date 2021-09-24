@@ -43,16 +43,13 @@ jobs:
       - name: Update data and render html
         run: |
           unlink("Canada.html")
-          unlink("Canada_cache", recursive = T)
           rmarkdown::render("Canada.Rmd")
-          dir()
         shell: Rscript {0}
       - name: Commit results
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git commit Canada.html -m "Re-build Canada.Rmd" || echo "No changes to commit"
-          git commit Canada_cache -m "Re-build Canada.Rmd" || echo "No changes to commit"
           git push origin || echo "No changes to commit"
  
         
