@@ -27,7 +27,7 @@ CA <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv") %>%
 ```
 
 
-This section uses the dataset published by Our World in Data, and gives an overview of Covid and vaccination trends in Canada.
+> This section uses the dataset published by Our World in Data, and gives an overview of Covid and vaccination trends in Canada.
 
 ### Country level trend
 ```{r}
@@ -103,14 +103,10 @@ ggplotly(vac) %>%
 # Import JHU data
 confirmedraw <- read_csv("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv") %>%
   filter(`Country/Region` == "Canada") %>%
-         # & `Province/State` != "Repatriated Travellers"
-         # & `Province/State` != "Diamond Princess" & `Province/State` != "Grand Princess") %>%
   rename(Province = `Province/State`) %>%
   select(!`Country/Region`)
 deathsraw <- read_csv("https://github.com/CSSEGISandData/COVID-19/raw/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv") %>%
   filter(`Country/Region` == "Canada") %>% 
-         # & `Province/State` != "Repatriated Travellers"
-         # & `Province/State` != "Diamond Princess" & `Province/State` != "Grand Princess") %>%
   rename(Province = `Province/State`) %>%
   select(!`Country/Region`)
 
@@ -123,7 +119,7 @@ deaths <- deathsraw %>%
   gather(key="date", value="deaths", -c(Province, Lat, Long)) %>%
   mutate(date = mdy(date)) 
 
-# Final data: combine all two
+# Final data: combine both confirmed and deaths
 CA_provinces <- left_join(confirmed, deaths, by = c("Province", "date", "Lat", "Long"))
 
 # Create new variable: daily reported numbers of cases, deaths and recovered cases, 
@@ -141,8 +137,7 @@ CA_provinces <- CA_provinces %>%
 ```
 
 
-
-Since Our World in Data does not include provincial level data in its dataset, this section uses the dataset published by Johns Hopkins University, and gives an overview of Covid and its related death count trends in Canadian provinces.  
+> Since Our World in Data does not include provincial level data in its dataset, the following section uses the dataset published by Johns Hopkins University, and gives an overview of Covid and its related death count trends in Canadian provinces.  
 
 ### Provincial level trend
 Vaccination data isn't reported in the JHU dataset, the graph displays the death count trend along with the case trend instead.
@@ -204,9 +199,9 @@ map_ca <- ca %>%
           plot.title = element_text(hjust=0.5,color="gray40", size=14),
           plot.subtitle = element_text(color="gray40", size = 10),
           legend.title	= element_text(color="grey35", size=9),
-          legend.text	= element_text(color="grey35", size=9)) # +
-    # labs(title = "Total Covid cases in Canadian provinces",
-    #      subtitle = paste("As of", max(ca$date), '%d %B, %Y')))
+          legend.text	= element_text(color="grey35", size=9)) +
+    labs(title = "Total Covid cases in Canadian provinces",
+         subtitle = paste("As of", max(ca$date), '%d %B, %Y'))
 ggplotly(map_ca, tooptip = "text") %>%
   layout(title = list(text = paste("Total Covid-19 cases in Canadian provinces<br>",
                                    "<sup>As of", max(ca$date), '</sup>')))
