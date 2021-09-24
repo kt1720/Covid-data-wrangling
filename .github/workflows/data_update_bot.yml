@@ -47,7 +47,8 @@ jobs:
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
-          git commit Canada.html Canada_cache -m "Update data" || echo "No changes to commit"
+          git commit Canada.html -m "Re-build Canada.Rmd" || echo "No changes to commit"
+          git commit Canada_cache -m "Re-build Canada.Rmd" || echo "No changes to commit"
           git push origin || echo "No changes to commit"
  
         
