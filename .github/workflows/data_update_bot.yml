@@ -8,7 +8,7 @@ on:
   schedule:
     - cron: "35 0,23 * * *"
 
-name: Render html update
+name: Update data
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -45,10 +45,10 @@ jobs:
           rmarkdown::render("Canada.Rmd")
         shell: Rscript {0}
       - name: Commit results
-        run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
-          git commit Canada.html -m "Re-build Canada.Rmd" || echo "No changes to commit"
-          git push origin || echo "No changes to commit"
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: 'Canada.html'
+          default_author: github_actions
+          message: "Bot: Re-build Canada.Rmd on `date +'%Y-%m-%d'`"
  
         
