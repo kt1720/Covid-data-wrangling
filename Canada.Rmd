@@ -229,7 +229,7 @@ map_ca <- ca %>%
           legend.text	= element_text(color="grey35", size=9)) +
     labs(title = "Total Covid cases in Canadian provinces",
          subtitle = paste("As of", format(Sys.time(), '%d %B, %Y')))
-ggplotly(map_tc, tooptip = "text") %>%
+ggplotly(map_ca, tooptip = "text") %>%
   layout(title = list(text = paste("Total Covid-19 cases in Canadian provinces<br>",
                                    "<sup>As of", max(ca$date), '</sup>')))
 ```
