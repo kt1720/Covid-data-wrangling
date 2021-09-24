@@ -180,28 +180,6 @@ ggplotly(facet_case) %>%
 
 ### Total cases map
 ```{r}
-# province <- st_read("province.shp", quiet = T) 
-# tc <- province %>%
-#          left_join(CA_provinces, by = "Province") %>%
-#          filter(date == max(date)) %>% 
-#          rename(`Total cases` = confirmed, `Total death counts` = deaths) 
-# map_tc <- tc %>% 
-#   ggplot() +
-#     geom_sf(aes(fill = `Total cases`, text = paste("Province: ", Province)),
-#             color = "gray40") +
-#     geom_sf_text(aes(label = PREABBR), size = 2) +
-#     scale_fill_gradient("Total COVID cases", labels = scales::number, 
-#                         low = "#fee8c8", high = "#e34a33") +
-#     theme_void() +
-#     theme(panel.grid = element_blank(),
-#           axis.text = element_blank(),
-#           axis.ticks = element_blank(),
-#           plot.title = element_text(hjust=0.5,color="gray40", size=14),
-#           plot.subtitle = element_text(color="gray40", size = 10),
-#           legend.title	= element_text(color="grey35", size=9),
-#           legend.text	= element_text(color="grey35", size=9)) +
-#     labs(title = "Total Covid cases in Canadian provinces",
-#          subtitle = paste("As of", format(Sys.time(), '%d %B, %Y')))
 ca <- ne_states(country = "Canada", returnclass = "sf") %>%
   rename(Province = gn_name) %>%
   select(Province, abbrev, region, geometry) %>%
@@ -226,16 +204,16 @@ map_ca <- ca %>%
           plot.title = element_text(hjust=0.5,color="gray40", size=14),
           plot.subtitle = element_text(color="gray40", size = 10),
           legend.title	= element_text(color="grey35", size=9),
-          legend.text	= element_text(color="grey35", size=9)) +
-    labs(title = "Total Covid cases in Canadian provinces",
-         subtitle = paste("As of", format(Sys.time(), '%d %B, %Y')))
+          legend.text	= element_text(color="grey35", size=9)) # +
+    # labs(title = "Total Covid cases in Canadian provinces",
+    #      subtitle = paste("As of", max(ca$date), '%d %B, %Y')))
 ggplotly(map_ca, tooptip = "text") %>%
   layout(title = list(text = paste("Total Covid-19 cases in Canadian provinces<br>",
                                    "<sup>As of", max(ca$date), '</sup>')))
 ```
 
 
-```{r}
+```{r total death map}
 # map_td <- tc %>% 
 #   ggplot() +
 #     geom_sf(aes(fill = `Total death counts`, text = paste("Province: ", Province)),
@@ -272,7 +250,7 @@ ca %>%
 ```
 
 
-```{r}
+```{r New death maps for the past 7 days}
 # ca %>%
 #   plot_ly(stroke = I("black"), split = ~Province, color = ~daily.deaths, colors = viridis::inferno(99),
 #           text = ~text2, showlegend = FALSE, hoveron = "fills", frame = ~date) %>%
