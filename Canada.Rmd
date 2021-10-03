@@ -66,23 +66,15 @@ rows <- which(is.na(CA$people_fully_vaccinated) & !is.na(CA$people_vaccinated))
 CA[rows, "people_fully_vaccinated"] = 0  # Change the NA values to 0
 
 vaccine <- CA %>%
-  mutate(`First dose` = round((people_vaccinated - people_fully_vaccinated) / population * 100, 3),
-         `Fully vaccinated` = round(people_fully_vaccinated / population  * 100, 3),
-         `Share of population with at least one dose` = round(people_vaccinated / population * 100, 3)) %>%
-  select(date, `First dose`, `Fully vaccinated`, `Share of population with at least one dose`) %>%
+  mutate(`First dose` = round(people_vaccinated / population * 100, 3),
+         `Fully vaccinated` = round(people_fully_vaccinated / population  * 100, 3)) %>%
+  select(date, `First dose`, `Fully vaccinated`) %>%
   drop_na(`First dose`) %>%
-  gather("doses", "Population share", -c(date, `Share of population with at least one dose`))
+  gather("doses", "Population share", -c(date)) %>%
+  mutate(doses = factor(doses))
 
 vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses)) +
-                                  # text = paste("Date:", date, "<br>Population share:",
-                                  # `Population share`, "%<br>doses:", doses))) +
-  geom_area() +
-  geom_text(data = vaccine[which.max(vaccine$date),],
-            aes(y = `Share of population with at least one dose`,
-                label=paste0(`Share of population with at least one dose`, "%")),
-            size = 3, vjust = -0.5) +
-# geom_text(data = vaccine[which.max(vaccine$`Population share`),],
-#           aes(y = `Population share`, label = paste0(`Population share`, "%")), size = 3, vjust = 1.25) +
+  geom_area(position = "identity") +
   theme_classic() +
   scale_x_date(date_breaks = "2 month") +
   labs(title = "Covid-19 vaccination progress in Canada ",
@@ -93,8 +85,6 @@ vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses
 #   transition_reveal(date) +
 #   ease_aes()
 ggplotly(vac) %>%
- # animation_opts(frame = 278, easing = "elastic", redraw = FALSE) %>%
- # rangeslider(list(type = "date")) %>%
    layout(hovermode = "x", legend = list(orientation = "h", x = 0.4, y = -0.1))
 ```
 
