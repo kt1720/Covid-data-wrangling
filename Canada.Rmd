@@ -32,21 +32,21 @@ CA <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv") %>%
 ### Country level trend
 ```{r}
 cvv <- ggplot(CA, aes(x = date)) +
-  geom_point(aes(y = new_cases, color = "Reported cases"), size = 0.75, shape = 21) +
-  geom_point(aes(y = new_vaccinations, color = "Vaccinations given"), size = 0.75, shape = 21) +
+  geom_point(aes(y = new_cases, color = "Cases"), size = 0.75, shape = 21) +
+  geom_point(aes(y = new_vaccinations, color = "Vaccinations"), size = 0.75, shape = 21) +
   geom_line(aes(y = new_cases_smoothed, color = "Cases(trend)"), size = 1) +
   geom_line(aes(y = new_vaccinations_smoothed, color = "Vaccinations(trend)"), size = 1) +
   theme_classic() +
-  scale_color_manual(values = c("Cases(trend)" = "darkblue", "Vaccinations(trend)" = "red",
-                                "Reported cases" = "skyblue1", "Vaccinations given" = "pink1")) +
+  scale_color_manual(values = c("Cases(trend)" = "darkblue", "Vaccinations(trend)" = "palegreen4",
+                                "Cases" = "skyblue1", "Vaccinations" = "darkseagreen")) +
   guides(color = guide_legend(override.aes = list(linetype = c("Cases(trend)" = 1,
                                                                "Vaccinations(trend)" = 1,
-                                                               "Reported cases" = 0,
-                                                               "Vaccinations given" = 0),
+                                                               "Cases" = 0,
+                                                               "Vaccinations" = 0),
                                                   shape = c("Cases(trend)" = NA,
                                                             "Vaccinations(trend)" = NA,
-                                                            "Reported cases" = 21,
-                                                            "Vaccinations given" = 21)))) +
+                                                            "Cases" = 21,
+                                                            "Vaccinations" = 21)))) +
   labs(title = "Covid-19 daily cases and vaccinations in Canada",
        x = "Date",
        y = "Daily cases & vaccinations (log10 scale)",
@@ -57,6 +57,8 @@ cvv <- ggplot(CA, aes(x = date)) +
 ggplotly(cvv) %>%
   layout(hovermode = "x", legend = list(orientation = "h", x = 0.24, y = -0.1))
 ```
+
+The log10 scale stabilizes the variance in the trend lines. It also allows a much easier comparison between the two trend lines since the vaccination number is much larger in scale than the case counts.
 
 
 ### Vaccination progress
@@ -76,6 +78,7 @@ vaccine <- CA %>%
 vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses)) +
   geom_area(position = "identity") +
   theme_classic() +
+  scale_fill_brewer(palette = "Greens") +
   scale_x_date(date_breaks = "2 month") +
   labs(title = "Covid-19 vaccination progress in Canada ",
        x = "Date", y = "Share of Population(%)",
