@@ -55,7 +55,7 @@ cvv <- ggplot(CA, aes(x = date)) +
   theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
   scale_y_continuous(trans="log10")
 ggplotly(cvv) %>%
-  layout(hovermode = "x", legend = list(orientation = "h", x = 0.24, y = -0.1))
+  layout(hovermode = "x", legend = list(orientation = "h", x = 0.3, y = -0.1))
 ```
 
 The log10 scale stabilizes the variance in the trend lines. It also allows a much easier comparison between the two trend lines since the vaccination number is much larger in scale than the case counts.
@@ -103,7 +103,7 @@ deathsraw <- read_csv("https://github.com/CSSEGISandData/COVID-19/raw/master/css
   rename(Province = `Province/State`) %>%
   select(!`Country/Region`)
 
-# DATA CLEANING: To create provincial level data in Canada
+# Data cleaning: To create provincial level data in Canada
 # Convert each data set from wide to long AND aggregate at provincial level  
 confirmed <- confirmedraw %>%
   gather(key="date", value="confirmed", -c(Province, Lat, Long)) %>%
@@ -138,20 +138,20 @@ Vaccination data isn't reported in the JHU dataset, the graph displays the death
 facet_case <- CA_provinces %>%
                 drop_na(rolling.confirmed) %>%
                 ggplot(aes(x=date)) + 
-                    geom_point(aes(y = daily.confirmed, color = "Reported cases"), 
+                    geom_point(aes(y = daily.confirmed, color = "Cases"), 
                                size = 0.25, shape = 21) +
                     geom_line(aes(y = rolling.confirmed, color = "Cases(trend)"), size = 0.5) +
                     geom_line(aes(y = rolling.deaths, color = "Deaths(trend)"), size = 0.5) +             
                     geom_bar(aes(y = daily.deaths), stat = "identity", width = 0.1, fill = "red") +
                     theme_bw() +
                     scale_color_manual(values = c("Cases(trend)" = "darkblue", 
-                                                  "Reported cases" = "skyblue1",
+                                                  "Cases" = "skyblue1",
                                                   "Deaths(trend)" = "coral2")) +
                     guides(color = guide_legend(override.aes = list(linetype = c("Cases(trend)" = 1, 
-                                                                                 "Reported cases" = 0,
+                                                                                 "Cases" = 0,
                                                                                  "Deaths(trend" = 1),
                                                                     shape = c("Cases(trend)" = NA, 
-                                                                              "Reported cases" = 21,
+                                                                              "Cases" = 21,
                                                                               "Deaths(trend)" = NA)))) +
                     scale_y_continuous(trans="log10") +
                     labs(title = "COVID-19 daily case and death trends (log10 scale) in Canadian provinces",
@@ -162,7 +162,7 @@ facet_case <- CA_provinces %>%
                     theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
                     facet_wrap(facets = "Province")
 ggplotly(facet_case) %>%
-  layout(legend = list(orientation = "h", x = 0.34, y = -0.1))
+  layout(legend = list(orientation = "h", x = 0.35, y = -0.1))
 ```
 
 
