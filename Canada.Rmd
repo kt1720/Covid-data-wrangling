@@ -55,7 +55,7 @@ cvv <- ggplot(CA, aes(x = date)) +
   theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
   scale_y_continuous(trans="log10")
 ggplotly(cvv) %>%
-  layout(hovermode = "x", legend = list(orientation = "h", x = 0.3, y = -0.1))
+  layout(hovermode = "x", legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1))
 ```
 
 The log10 scale stabilizes the variance in the trend lines. It also allows a much easier comparison between the two trend lines since the vaccination number is much larger in scale than the case counts.
@@ -88,7 +88,7 @@ vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses
 #   transition_reveal(date) +
 #   ease_aes()
 ggplotly(vac) %>%
-   layout(hovermode = "x", legend = list(orientation = "h", x = 0.4, y = -0.1))
+   layout(hovermode = "x", legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1))
 ```
 
 
@@ -162,7 +162,7 @@ facet_case <- CA_provinces %>%
                     theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
                     facet_wrap(facets = "Province")
 ggplotly(facet_case) %>%
-  layout(legend = list(orientation = "h", x = 0.35, y = -0.1))
+  layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1))
 ```
 
 
