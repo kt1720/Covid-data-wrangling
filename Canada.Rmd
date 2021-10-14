@@ -116,7 +116,7 @@ deaths <- deathsraw %>%
 CA_provinces <- left_join(confirmed, deaths, by = c("Province", "date", "Lat", "Long"))
 
 # Create new variable: daily reported numbers of cases, deaths and recovered cases, 
-#                      7 days rolling average case numbers, number of days
+#                      7 days rolling average case numbers, number of days, weeks
 # Drop observations of Repatriated Travellers and the two cruise ships from the provincial data
 CA_provinces <- CA_provinces %>% 
   filter(Province != "Repatriated Travellers" & Province != "Diamond Princess" &
@@ -174,7 +174,7 @@ map_ca <- ne_states(country = "Canada", returnclass = "sf") %>%
   select(Province, postal, region, geometry) %>%
   left_join(CA_provinces, by = "Province") %>%
   filter(date == max(date)) %>%
-  rename(`Total cases` = confirmed, `Total death counts` = deaths) %>%
+  rename(`Total cases` = confirmed) %>%
   ggplot() +
     geom_sf(aes(fill = `Total cases`, text = paste("Province: ", Province)),
             color = "gray40") +
@@ -196,14 +196,18 @@ ggplotly(map_ca, tooptip = "text") %>%
                                    "<sup>As of", max(CA_provinces$date), '</sup>')))
 ```
 
-
 ```{r total death map}
-# map_td <- tc %>% 
+# map_ca_d <- ne_states(country = "Canada", returnclass = "sf") %>%
+#   rename(Province = gn_name) %>%
+#   select(Province, postal, region, geometry) %>%
+#   left_join(CA_provinces, by = "Province") %>%
+#   filter(date == max(date)) %>%
+#   rename(`Total death counts` = deaths) %>%
 #   ggplot() +
 #     geom_sf(aes(fill = `Total death counts`, text = paste("Province: ", Province)),
 #             color = "gray40") +
-#     geom_sf_text(aes(label = PREABBR), size = 2) +
-#     scale_fill_gradient("Total COVID death counts", labels = scales::number, 
+#     geom_sf_text(aes(label = postal), size = 2) +
+#     scale_fill_gradient("Total death counts", labels = scales::number, 
 #                         low = "#fee8c8", high = "#e34a33") +
 #     theme_void() +
 #     theme(panel.grid = element_blank(),
@@ -214,10 +218,10 @@ ggplotly(map_ca, tooptip = "text") %>%
 #           legend.title	= element_text(color="grey35", size=9),
 #           legend.text	= element_text(color="grey35", size=9)) +
 #     labs(title = "Total Covid death counts in Canadian provinces",
-#          subtitle = paste("As of", format(Sys.time(), '%d %B, %Y')))
-# ggplotly(map_td, tooptip = "text") %>%
-#   layout(title = list(text = paste("Total Covid-19 death counts in Canadian provinces<br>",
-#                                    "<sup>As of", max(tc$date), '</sup>')))
+#          subtitle = paste("As of", max(CA_provinces$date), '%d %B, %Y'))
+# ggplotly(map_ca_d, tooptip = "text") %>%
+#   layout(title = list(text = paste("Total Covid-19 deaths in Canadian provinces<br>",
+#                                    "<sup>As of", max(CA_provinces$date), '</sup>')))
 ```
 
 
@@ -227,14 +231,15 @@ Since some provinces do not report Covid cases during the weekend, displaying th
 ca <- CA_provinces %>%
   filter(weeks >= max(weeks) - 5) %>%
   group_by(weeks, Province) %>%
-  summarize(daily.confirmed = sum(daily.confirmed), 
+  summarize(daily.confirmed = sum(daily.confirmed),
+            daily.deaths = sum(daily.deaths),
             label = paste0(min(format(date, "%m/%d")), "-", max(format(date, "%m/%d")))) %>%
-  mutate(text = paste("Province:", Province, "\nConfirmed cases:", daily.confirmed))
+  mutate(text = paste("Province:", Province, "\nConfirmed cases:", daily.confirmed),
+         text2 = paste("Province:", Province, "\nDeaths:", daily.deaths))
   
-
 ne_states(country = "Canada", returnclass = "sf") %>%
   rename(Province = gn_name) %>%
-  select(Province, postal, region, geometry) %>%
+  select(Province, geometry) %>%
   left_join(ca, by = "Province") %>%
   plot_ly(stroke = I("black"), split = ~Province, color = ~daily.confirmed, colors = viridis::inferno(99),
           text = ~text, showlegend = FALSE, hoveron = "fills", frame = ~label) %>%
@@ -243,25 +248,19 @@ ne_states(country = "Canada", returnclass = "sf") %>%
   animation_slider(currentvalue = list(prefix="Date: ", font = list(color = "red"))) %>%
   layout(title = list(text = paste("New weekly Covid-19 cases in Canadian provinces<br>",
                                    "<sup>As of", max(CA_provinces$date), '</sup>')))
-
-# ca %>%
-#   plot_ly(stroke = I("black"), split = ~Province, color = ~daily.confirmed, colors = viridis::inferno(99),
-#           text = ~text, showlegend = FALSE, hoveron = "fills", frame = ~date) %>%
-#   colorbar(title = "Daily confirmed cases") %>%
-#   style(hoverlabel = list(bgcolor = "white")) %>%
-#   animation_slider(currentvalue = list(prefix="Date: ", font = list(color = "red"))) %>%
-#   layout(title = list(text = paste("New Covid-19 cases in Canadian provinces for the past 7 days<br>",
-#                                    "<sup>As of", max(ca$date), '</sup>')))
 ```
 
 
-```{r New death maps for the past 7 days}
-# ca %>%
+```{r New death maps for the past 6 weeks}
+# ne_states(country = "Canada", returnclass = "sf") %>%
+#   rename(Province = gn_name) %>%
+#   select(Province, geometry) %>%
+#   left_join(ca, by = "Province") %>%
 #   plot_ly(stroke = I("black"), split = ~Province, color = ~daily.deaths, colors = viridis::inferno(99),
-#           text = ~text2, showlegend = FALSE, hoveron = "fills", frame = ~date) %>%
-#   colorbar(title = "Daily death counts") %>%
+#           text = ~text2, showlegend = FALSE, hoveron = "fills", frame = ~label) %>%
+#   colorbar(title = "Weekly death toll") %>%
 #   style(hoverlabel = list(bgcolor = "white")) %>%
-#   animation_slider(currentvalue = list(prefix = "Date: ", font = list(color = "red"))) %>%
-#   layout(title = list(text = paste("New Covid-19 deaths in Canadian provinces for the past 7 days<br>",
-#                                    "<sup>As of", max(tc$date), '</sup>')))
+#   animation_slider(currentvalue = list(prefix="Date: ", font = list(color = "red"))) %>%
+#   layout(title = list(text = paste("New weekly Covid-19 deaths in Canadian provinces<br>",
+#                                    "<sup>As of", max(CA_provinces$date), '</sup>')))
 ```
