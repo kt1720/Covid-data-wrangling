@@ -119,14 +119,15 @@ CA_provinces <- left_join(confirmed, deaths, by = c("Province", "date", "Lat", "
 #                      7 days rolling average case numbers, number of days
 # Drop observations of Repatriated Travellers and the two cruise ships from the provincial data
 CA_provinces <- CA_provinces %>% 
+  filter(Province != "Repatriated Travellers" & Province != "Diamond Princess" &
+         Province != "Grand Princess") %>% 
   group_by(Province) %>% 
   mutate(daily.confirmed = c(confirmed[1], diff(confirmed)),
          rolling.confirmed = round(rollmean(daily.confirmed, k = 7, fill = NA, align = "right"), 3),
          daily.deaths = c(deaths[1], diff(deaths)),
          rolling.deaths = round(rollmean(daily.deaths, k = 7, fill = NA, align = "right"), 3),
-         days = date - first(date) + 1) %>% 
-  filter(Province != "Repatriated Travellers" & Province != "Diamond Princess" &
-         Province != "Grand Princess")
+         days = date - first(date) + 1, 
+         weeks = floor(as.numeric(difftime(date, first(date), units = "weeks"))) + 1)
 ```
 
 
@@ -168,21 +169,16 @@ ggplotly(facet_case) %>%
 
 ### Total cases map
 ```{r}
-ca <- ne_states(country = "Canada", returnclass = "sf") %>%
+map_ca <- ne_states(country = "Canada", returnclass = "sf") %>%
   rename(Province = gn_name) %>%
-  select(Province, abbrev, region, geometry) %>%
+  select(Province, postal, region, geometry) %>%
   left_join(CA_provinces, by = "Province") %>%
-  filter(days >= max(days) - 7 & days <= max(days)) %>%
-  mutate(text = paste("Province:", Province, "\nConfirmed cases:", daily.confirmed),
-         text2 = paste("Province:", Province, "\nDeath counts:", daily.deaths)) %>%
-  rename(`Total cases` = confirmed, `Total death counts` = deaths) 
-
-map_ca <- ca %>%
   filter(date == max(date)) %>%
+  rename(`Total cases` = confirmed, `Total death counts` = deaths) %>%
   ggplot() +
     geom_sf(aes(fill = `Total cases`, text = paste("Province: ", Province)),
             color = "gray40") +
-    geom_sf_text(aes(label = abbrev), size = 2) +
+    geom_sf_text(aes(label = postal), size = 2) +
     scale_fill_gradient("Total COVID cases", labels = scales::number, 
                         low = "#fee8c8", high = "#e34a33") +
     theme_void() +
@@ -194,10 +190,10 @@ map_ca <- ca %>%
           legend.title	= element_text(color="grey35", size=9),
           legend.text	= element_text(color="grey35", size=9)) +
     labs(title = "Total Covid cases in Canadian provinces",
-         subtitle = paste("As of", max(ca$date), '%d %B, %Y'))
+         subtitle = paste("As of", max(CA_provinces$date), '%d %B, %Y'))
 ggplotly(map_ca, tooptip = "text") %>%
   layout(title = list(text = paste("Total Covid-19 cases in Canadian provinces<br>",
-                                   "<sup>As of", max(ca$date), '</sup>')))
+                                   "<sup>As of", max(CA_provinces$date), '</sup>')))
 ```
 
 
@@ -225,16 +221,37 @@ ggplotly(map_ca, tooptip = "text") %>%
 ```
 
 
-### New cases map for the past 7 days
+### New cases map for the past 6 weeks
+Since some provinces do not report Covid cases during the weekend, displaying the weekly data would be more useful than the daily result. 
 ```{r}
-ca %>%
+ca <- CA_provinces %>%
+  filter(weeks >= max(weeks) - 5) %>%
+  group_by(weeks, Province) %>%
+  summarize(daily.confirmed = sum(daily.confirmed), 
+            label = paste0(min(format(date, "%m/%d")), "-", max(format(date, "%m/%d")))) %>%
+  mutate(text = paste("Province:", Province, "\nConfirmed cases:", daily.confirmed))
+  
+
+ne_states(country = "Canada", returnclass = "sf") %>%
+  rename(Province = gn_name) %>%
+  select(Province, postal, region, geometry) %>%
+  left_join(ca, by = "Province") %>%
   plot_ly(stroke = I("black"), split = ~Province, color = ~daily.confirmed, colors = viridis::inferno(99),
-          text = ~text, showlegend = FALSE, hoveron = "fills", frame = ~date) %>%
-  colorbar(title = "Daily confirmed cases") %>%
+          text = ~text, showlegend = FALSE, hoveron = "fills", frame = ~label) %>%
+  colorbar(title = "Weekly confirmed cases") %>%
   style(hoverlabel = list(bgcolor = "white")) %>%
   animation_slider(currentvalue = list(prefix="Date: ", font = list(color = "red"))) %>%
-  layout(title = list(text = paste("New Covid-19 cases in Canadian provinces for the past 7 days<br>",
-                                   "<sup>As of", max(ca$date), '</sup>')))
+  layout(title = list(text = paste("New weekly Covid-19 cases in Canadian provinces<br>",
+                                   "<sup>As of", max(CA_provinces$date), '</sup>')))
+
+# ca %>%
+#   plot_ly(stroke = I("black"), split = ~Province, color = ~daily.confirmed, colors = viridis::inferno(99),
+#           text = ~text, showlegend = FALSE, hoveron = "fills", frame = ~date) %>%
+#   colorbar(title = "Daily confirmed cases") %>%
+#   style(hoverlabel = list(bgcolor = "white")) %>%
+#   animation_slider(currentvalue = list(prefix="Date: ", font = list(color = "red"))) %>%
+#   layout(title = list(text = paste("New Covid-19 cases in Canadian provinces for the past 7 days<br>",
+#                                    "<sup>As of", max(ca$date), '</sup>')))
 ```
 
 
