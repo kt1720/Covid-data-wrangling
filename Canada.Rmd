@@ -69,11 +69,12 @@ CA[rows, "people_fully_vaccinated"] = 0  # Change the NA values to 0
 
 vaccine <- CA %>%
   mutate(`First dose` = round(people_vaccinated / population * 100, 3),
-         `Fully vaccinated` = round(people_fully_vaccinated / population  * 100, 3)) %>%
-  select(date, `First dose`, `Fully vaccinated`) %>%
-  drop_na(`First dose`) %>%
+         `Fully vaccinated` = round(people_fully_vaccinated / population  * 100, 3),
+          Booster = round(total_boosters / population * 100, 3)) %>%
+  select(date, `First dose`, `Fully vaccinated`, Booster) %>%
+  drop_na(`First dose`, Booster) %>%
   gather("doses", "Population share", -c(date)) %>%
-  mutate(doses = factor(doses))
+  mutate(doses = factor(doses, levels = c("First dose", "Fully vaccinated", "Booster")))
 
 vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses)) +
   geom_area(position = "identity") +
