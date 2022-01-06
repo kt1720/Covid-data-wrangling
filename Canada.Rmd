@@ -139,7 +139,7 @@ Vaccination data isn't reported in the JHU dataset, the graph displays the death
 ```{r}
 facet_case <- CA_provinces %>%
                 drop_na(rolling.confirmed) %>%
-                ggplot(aes(x=date)) + 
+                ggplot(aes(x = date)) + 
                     geom_point(aes(y = daily.confirmed, color = "Cases"), 
                                size = 0.25, shape = 21) +
                     geom_line(aes(y = rolling.confirmed, color = "Cases(trend)"), size = 0.5) +
@@ -156,12 +156,15 @@ facet_case <- CA_provinces %>%
                                                                               "Cases" = 21,
                                                                               "Deaths(trend)" = NA)))) +
                     scale_y_continuous(trans="log10") +
+                    scale_x_date(date_labels = "%b %Y", date_breaks = "4 months") +
                     labs(title = "COVID-19 daily case and death trends (log10 scale) in Canadian provinces",
                          x = "Date",
                          y = NULL,
                         # y = "Daily cases & death counts (log scale)",
                          color = NULL, fill = NULL, caption = "Data: JHU") +
-                    theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
+                    theme(plot.title = element_text(hjust = 0.5), 
+                          legend.position = "bottom",
+                          axis.text.x = element_text(angle = 60, hjust = 1)) +
                     facet_wrap(facets = "Province")
 ggplotly(facet_case) %>%
   layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1))
@@ -234,8 +237,9 @@ ca <- CA_provinces %>%
   group_by(weeks, Province) %>%
   summarize(daily.confirmed = sum(daily.confirmed),
             daily.deaths = sum(daily.deaths),
-            label = paste0(min(format(date, "%m/%d")), "-", max(format(date, "%m/%d")))) %>%
-  mutate(text = paste("Province:", Province, "\nConfirmed cases:", daily.confirmed),
+            label = paste0(min(format(date, "%Y/%m/%d")), "-", max(format(date, "%Y/%m/%d")))) %>%
+  mutate(label = gsub(label, pattern = "2021/|2022/", replacement = ""),
+         text = paste("Province:", Province, "\nConfirmed cases:", daily.confirmed),
          text2 = paste("Province:", Province, "\nDeaths:", daily.deaths))
   
 ne_states(country = "Canada", returnclass = "sf") %>%
