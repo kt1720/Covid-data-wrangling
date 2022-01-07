@@ -237,8 +237,8 @@ ca <- CA_provinces %>%
   group_by(weeks, Province) %>%
   summarize(daily.confirmed = sum(daily.confirmed),
             daily.deaths = sum(daily.deaths),
-            label = paste0(min(format(date, "%Y/%m/%d")), "-", max(format(date, "%Y/%m/%d")))) %>%
-  mutate(label = gsub(label, pattern = "2021/|2022/", replacement = ""),
+            label = paste0(min(format(date, "%y/%b/%d")), "-", max(format(date, "%y/%b/%d")))) %>%
+  mutate(# label = gsub(label, pattern = "21/|22/", replacement = ""),
          text = paste("Province:", Province, "\nConfirmed cases:", daily.confirmed),
          text2 = paste("Province:", Province, "\nDeaths:", daily.deaths))
   
@@ -247,7 +247,7 @@ ne_states(country = "Canada", returnclass = "sf") %>%
   select(Province, geometry) %>%
   left_join(ca, by = "Province") %>%
   plot_ly(stroke = I("black"), split = ~Province, color = ~daily.confirmed, colors = viridis::inferno(99),
-          text = ~text, showlegend = FALSE, hoveron = "fills", frame = ~label) %>%
+          text = ~text, showlegend = FALSE, hoveron = "fills", frame = ~gsub(label, pattern = "21/|22/", replacement = "")) %>%
   colorbar(title = "Weekly confirmed cases") %>%
   style(hoverlabel = list(bgcolor = "white")) %>%
   animation_slider(currentvalue = list(prefix="Date: ", font = list(color = "red"))) %>%
