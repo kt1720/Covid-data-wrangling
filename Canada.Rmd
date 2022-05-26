@@ -26,10 +26,10 @@ CA <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv") %>%
   select(where(~!all(is.na(.x)))) # Drop columns that contain all NA values
 ```
 
-
 > This section uses the dataset published by Our World in Data, and gives an overview of Covid and vaccination trends in Canada.
 
 ### Country level trend
+
 ```{r}
 cvv <- ggplot(CA, aes(x = date)) +
   geom_point(aes(y = new_cases, color = "Cases"), size = 0.75, shape = 21) +
@@ -60,8 +60,8 @@ ggplotly(cvv) %>%
 
 The log10 scale stabilizes the variance in the trend lines. It also allows a much easier comparison between the two trend lines since the vaccination number is much larger in scale than the case counts.
 
-
 ### Vaccination progress
+
 ```{r}
 # Find out the rows where the second dose data are NAs when first dose were given at the start of the vaccination process
 rows <- which(is.na(CA$people_fully_vaccinated) & !is.na(CA$people_vaccinated))
@@ -91,7 +91,6 @@ vac <- ggplot(data = vaccine, aes(x = date, y = `Population share`, fill = doses
 ggplotly(vac) %>%
    layout(hovermode = "x", legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1))
 ```
-
 
 ```{r}
 # Import JHU data
@@ -131,11 +130,12 @@ CA_provinces <- CA_provinces %>%
          weeks = floor(as.numeric(difftime(date, first(date), units = "weeks"))) + 1)
 ```
 
-
-> Since Our World in Data does not include provincial level data in its dataset, the following section uses the dataset published by Johns Hopkins University, and gives an overview of Covid and its related death count trends in Canadian provinces.  
+> Since Our World in Data does not include provincial level data in its dataset, the following section uses the dataset published by Johns Hopkins University, and gives an overview of Covid and its related death count trends in Canadian provinces.
 
 ### Provincial level trend
+
 Vaccination data isn't reported in the JHU dataset, the graph displays the death count trend along with the case trend instead.
+
 ```{r}
 facet_case <- CA_provinces %>%
                 drop_na(rolling.confirmed) %>%
@@ -170,8 +170,8 @@ ggplotly(facet_case) %>%
   layout(legend = list(orientation = "h", xanchor = "center", x = 0.5, y = -0.1))
 ```
 
-
 ### Total cases map
+
 ```{r}
 map_ca <- ne_states(country = "Canada", returnclass = "sf") %>%
   rename(Province = gn_name) %>%
@@ -228,9 +228,10 @@ ggplotly(map_ca, tooptip = "text") %>%
 #                                    "<sup>As of", max(CA_provinces$date), '</sup>')))
 ```
 
-
 ### New cases map for the past 6 weeks
-Since some provinces do not report Covid cases during the weekend, displaying the weekly data would be more useful than the daily result. 
+
+Since some provinces do not report Covid cases during the weekend, displaying the weekly data would be more useful than the daily result.
+
 ```{r}
 ca <- CA_provinces %>%
   filter(weeks >= max(weeks) - 5) %>%
@@ -257,7 +258,6 @@ ne_states(country = "Canada", returnclass = "sf") %>%
   layout(title = list(text = paste("New weekly Covid-19 cases in Canadian provinces<br>",
                                    "<sup>As of", max(CA_provinces$date), '</sup>')))
 ```
-
 
 ```{r New death maps for the past 6 weeks}
 # ne_states(country = "Canada", returnclass = "sf") %>%
