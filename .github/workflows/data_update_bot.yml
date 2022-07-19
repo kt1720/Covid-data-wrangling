@@ -35,7 +35,7 @@ jobs:
           install.packages("zoo")
           install.packages("lubridate")
           install.packages("rmarkdown")
-          install.packages("sf")
+          install.packages("sf", type="binary")
           install.packages("viridis")
           install.packages("rnaturalearth")
           devtools::install_github("ropensci/rnaturalearthhires")
