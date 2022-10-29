@@ -27,7 +27,7 @@ jobs:
         uses: r-lib/actions/setup-pandoc@v1
       - name: Install dependencies
         run: |
-          install.packages("devtools")
+          devtools::install_github("r-lib/devtools")
           install.packages("knitr")
           install.packages("plotly")
           install.packages("tidyverse")
