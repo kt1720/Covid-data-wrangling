@@ -27,7 +27,7 @@ jobs:
         uses: r-lib/actions/setup-pandoc@v1
       - name: Install dependencies
         run: |
-          devtools::install_github("r-lib/devtools")
+          install.packages("remotes")
           install.packages("knitr")
           install.packages("plotly")
           install.packages("tidyverse")
@@ -38,7 +38,7 @@ jobs:
           install.packages("sf", type="binary")
           install.packages("viridis")
           install.packages("rnaturalearth")
-          devtools::install_github("ropensci/rnaturalearthhires")
+          remotes::install_github("ropensci/rnaturalearthhires")
         shell: Rscript {0}
       - name: Update data and render html
         run: |
