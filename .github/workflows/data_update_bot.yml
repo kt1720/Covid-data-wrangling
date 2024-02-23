@@ -5,8 +5,8 @@ on:
     paths:
       - Canada.Rmd
       - .github/workflows/data_update_bot.yml
-  schedule:
-    - cron: "30 7,23 * * *"
+  # schedule:
+  #   - cron: "30 7,23 * * *"
 
 name: Update data
 
